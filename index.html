@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RETRO ARCADE</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,6 +49,18 @@
                         <div class="score">SCORE: <span id="snake-score">0</span></div>
                         <div class="controls">ARROWS: MOVE | ESC: MENU</div>
                     </div>
+                    <div class="touch-controls" id="snake-controls">
+                        <div class="touch-btn-group">
+                            <div class="touch-btn-row">
+                                <button class="touch-btn" data-direction="up">↑</button>
+                            </div>
+                            <div class="touch-btn-row">
+                                <button class="touch-btn" data-direction="left">←</button>
+                                <button class="touch-btn" data-direction="down">↓</button>
+                                <button class="touch-btn" data-direction="right">→</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Pong Game -->
@@ -57,6 +69,10 @@
                     <div class="game-info">
                         <div class="score">SCORE: <span id="pong-score">0</span> - <span id="pong-ai-score">0</span></div>
                         <div class="controls">W/S: MOVE | ESC: MENU</div>
+                    </div>
+                    <div class="touch-controls" id="pong-controls">
+                        <button class="touch-btn touch-btn-large" data-action="up">↑ UP</button>
+                        <button class="touch-btn touch-btn-large" data-action="down">↓ DOWN</button>
                     </div>
                 </div>
 
@@ -68,6 +84,19 @@
                         <div class="score">LEVEL: <span id="tetris-level">1</span></div>
                         <div class="controls">A/D: ROTATE | ARROWS: MOVE | ESC: MENU</div>
                     </div>
+                    <div class="touch-controls" id="tetris-controls">
+                        <div class="touch-btn-group">
+                            <div class="touch-btn-row">
+                                <button class="touch-btn" data-action="rotate-left">↺</button>
+                                <button class="touch-btn" data-action="rotate-right">↻</button>
+                            </div>
+                            <div class="touch-btn-row">
+                                <button class="touch-btn" data-action="left">←</button>
+                                <button class="touch-btn" data-action="down">↓</button>
+                                <button class="touch-btn" data-action="right">→</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Space Invaders Game -->
@@ -77,6 +106,11 @@
                         <div class="score">SCORE: <span id="invaders-score">0</span></div>
                         <div class="score">LIVES: <span id="invaders-lives">3</span></div>
                         <div class="controls">ARROWS: MOVE | SPACE: SHOOT | ESC: MENU</div>
+                    </div>
+                    <div class="touch-controls" id="invaders-controls">
+                        <button class="touch-btn" data-action="left">←</button>
+                        <button class="touch-btn touch-btn-large" data-action="shoot">🔫 SHOOT</button>
+                        <button class="touch-btn" data-action="right">→</button>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  retro-arcade:
+    build: .
+    container_name: retro-arcade
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    volumes:
+      # Optional: mount for development (uncomment if you want live reload)
+      # - ./index.html:/usr/share/nginx/html/index.html:ro
+      # - ./script.js:/usr/share/nginx/html/script.js:ro
+      # - ./style.css:/usr/share/nginx/html/style.css:ro
+

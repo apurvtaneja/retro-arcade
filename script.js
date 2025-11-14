@@ -1,3 +1,20 @@
+// Mobile Detection
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                 (window.innerWidth <= 768);
+
+// Utility function to resize canvas responsively
+function resizeCanvas(canvas, baseWidth, baseHeight) {
+    const maxWidth = Math.min(window.innerWidth - 40, baseWidth);
+    const maxHeight = Math.min(window.innerHeight * 0.6, baseHeight);
+    const scale = Math.min(maxWidth / baseWidth, maxHeight / baseHeight, 1);
+    
+    canvas.style.width = (baseWidth * scale) + 'px';
+    canvas.style.height = (baseHeight * scale) + 'px';
+    // Keep internal canvas dimensions at base size for proper rendering
+    if (canvas.width !== baseWidth) canvas.width = baseWidth;
+    if (canvas.height !== baseHeight) canvas.height = baseHeight;
+}
+
 // Game Manager
 class GameManager {
     constructor() {
@@ -42,6 +59,14 @@ class GameManager {
         // Show selected game
         const gameScreen = document.getElementById(`${gameName}-game`);
         gameScreen.classList.add('active');
+
+        // Show touch controls on mobile
+        if (isMobile) {
+            const touchControls = document.getElementById(`${gameName}-controls`);
+            if (touchControls) {
+                touchControls.classList.add('active');
+            }
+        }
 
         // Initialize game if not already initialized
         if (!this.gameInstances[gameName]) {
@@ -95,6 +120,11 @@ class GameManager {
             screen.classList.remove('active');
         });
 
+        // Hide touch controls
+        document.querySelectorAll('.touch-controls').forEach(controls => {
+            controls.classList.remove('active');
+        });
+
         // Show menu
         document.getElementById('game-menu').classList.add('active');
         this.currentGame = null;
@@ -106,8 +136,10 @@ class SnakeGame {
     constructor() {
         this.canvas = document.getElementById('snake-canvas');
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = 600;
-        this.canvas.height = 600;
+        this.baseWidth = 600;
+        this.baseHeight = 600;
+        this.canvas.width = this.baseWidth;
+        this.canvas.height = this.baseHeight;
         this.gridSize = 20;
         this.tileCount = this.canvas.width / this.gridSize;
         
@@ -118,9 +150,20 @@ class SnakeGame {
         this.score = 0;
         this.gameLoop = null;
         this.keys = {};
+        this.touchStartX = 0;
+        this.touchStartY = 0;
     }
 
     init() {
+        // Resize canvas for mobile
+        if (isMobile) {
+            resizeCanvas(this.canvas, this.baseWidth, this.baseHeight);
+            window.addEventListener('resize', () => {
+                resizeCanvas(this.canvas, this.baseWidth, this.baseHeight);
+            });
+        }
+
+        // Keyboard controls
         document.addEventListener('keydown', (e) => {
             if (!this.gameLoop) return;
             this.keys[e.key] = true;
@@ -138,6 +181,85 @@ class SnakeGame {
                 this.dx = 1;
                 this.dy = 0;
             }
+        });
+
+        // Touch controls
+        const controls = document.getElementById('snake-controls');
+        if (controls) {
+            controls.querySelectorAll('[data-direction]').forEach(btn => {
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const dir = btn.dataset.direction;
+                    if (dir === 'up' && this.dy !== 1) {
+                        this.dx = 0;
+                        this.dy = -1;
+                    } else if (dir === 'down' && this.dy !== -1) {
+                        this.dx = 0;
+                        this.dy = 1;
+                    } else if (dir === 'left' && this.dx !== 1) {
+                        this.dx = -1;
+                        this.dy = 0;
+                    } else if (dir === 'right' && this.dx !== -1) {
+                        this.dx = 1;
+                        this.dy = 0;
+                    }
+                });
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const dir = btn.dataset.direction;
+                    if (dir === 'up' && this.dy !== 1) {
+                        this.dx = 0;
+                        this.dy = -1;
+                    } else if (dir === 'down' && this.dy !== -1) {
+                        this.dx = 0;
+                        this.dy = 1;
+                    } else if (dir === 'left' && this.dx !== 1) {
+                        this.dx = -1;
+                        this.dy = 0;
+                    } else if (dir === 'right' && this.dx !== -1) {
+                        this.dx = 1;
+                        this.dy = 0;
+                    }
+                });
+            });
+        }
+
+        // Swipe gestures
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.touchStartX = e.touches[0].clientX;
+            this.touchStartY = e.touches[0].clientY;
+        });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (!this.touchStartX || !this.touchStartY) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = this.touchStartX - touchEndX;
+            const diffY = this.touchStartY - touchEndY;
+            
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 30 && this.dx !== 1) {
+                    this.dx = -1;
+                    this.dy = 0;
+                } else if (diffX < -30 && this.dx !== -1) {
+                    this.dx = 1;
+                    this.dy = 0;
+                }
+            } else {
+                if (diffY > 30 && this.dy !== 1) {
+                    this.dx = 0;
+                    this.dy = -1;
+                } else if (diffY < -30 && this.dy !== -1) {
+                    this.dx = 0;
+                    this.dy = 1;
+                }
+            }
+            
+            this.touchStartX = 0;
+            this.touchStartY = 0;
         });
     }
 
@@ -175,9 +297,9 @@ class SnakeGame {
             return;
         }
 
-        // Self collision
-        for (let segment of this.snake) {
-            if (head.x === segment.x && head.y === segment.y) {
+        // Self collision (skip the head itself)
+        for (let i = 1; i < this.snake.length; i++) {
+            if (head.x === this.snake[i].x && head.y === this.snake[i].y) {
                 this.gameOver();
                 return;
             }
@@ -253,8 +375,10 @@ class PongGame {
     constructor() {
         this.canvas = document.getElementById('pong-canvas');
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = 800;
-        this.canvas.height = 400;
+        this.baseWidth = 800;
+        this.baseHeight = 400;
+        this.canvas.width = this.baseWidth;
+        this.canvas.height = this.baseHeight;
         
         this.paddleHeight = 80;
         this.paddleWidth = 10;
@@ -274,6 +398,15 @@ class PongGame {
     }
 
     init() {
+        // Resize canvas for mobile
+        if (isMobile) {
+            resizeCanvas(this.canvas, this.baseWidth, this.baseHeight);
+            window.addEventListener('resize', () => {
+                resizeCanvas(this.canvas, this.baseWidth, this.baseHeight);
+            });
+        }
+
+        // Keyboard controls
         document.addEventListener('keydown', (e) => {
             if (!this.gameLoop) return;
             this.keys[e.key.toLowerCase()] = true;
@@ -282,6 +415,30 @@ class PongGame {
         document.addEventListener('keyup', (e) => {
             this.keys[e.key.toLowerCase()] = false;
         });
+
+        // Touch controls
+        const controls = document.getElementById('pong-controls');
+        if (controls) {
+            controls.querySelectorAll('[data-action]').forEach(btn => {
+                const action = btn.dataset.action;
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.keys[action === 'up' ? 'w' : 's'] = true;
+                });
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.keys[action === 'up' ? 'w' : 's'] = false;
+                });
+                btn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    this.keys[action === 'up' ? 'w' : 's'] = true;
+                });
+                btn.addEventListener('mouseup', (e) => {
+                    e.preventDefault();
+                    this.keys[action === 'up' ? 'w' : 's'] = false;
+                });
+            });
+        }
     }
 
     start() {
@@ -425,8 +582,10 @@ class TetrisGame {
     constructor() {
         this.canvas = document.getElementById('tetris-canvas');
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = 300;
-        this.canvas.height = 600;
+        this.baseWidth = 300;
+        this.baseHeight = 600;
+        this.canvas.width = this.baseWidth;
+        this.canvas.height = this.baseHeight;
         
         this.gridWidth = 10;
         this.gridHeight = 20;
@@ -443,6 +602,15 @@ class TetrisGame {
     }
 
     init() {
+        // Resize canvas for mobile
+        if (isMobile) {
+            resizeCanvas(this.canvas, this.baseWidth, this.baseHeight);
+            window.addEventListener('resize', () => {
+                resizeCanvas(this.canvas, this.baseWidth, this.baseHeight);
+            });
+        }
+
+        // Keyboard controls
         document.addEventListener('keydown', (e) => {
             if (!this.gameLoop) return;
             this.keys[e.key.toLowerCase()] = true;
@@ -459,6 +627,42 @@ class TetrisGame {
                 this.rotatePiece(1);
             }
         });
+
+        // Touch controls
+        const controls = document.getElementById('tetris-controls');
+        if (controls) {
+            controls.querySelectorAll('[data-action]').forEach(btn => {
+                const action = btn.dataset.action;
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (action === 'left') {
+                        this.movePiece(-1, 0);
+                    } else if (action === 'right') {
+                        this.movePiece(1, 0);
+                    } else if (action === 'down') {
+                        this.movePiece(0, 1);
+                    } else if (action === 'rotate-left') {
+                        this.rotatePiece(-1);
+                    } else if (action === 'rotate-right') {
+                        this.rotatePiece(1);
+                    }
+                });
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (action === 'left') {
+                        this.movePiece(-1, 0);
+                    } else if (action === 'right') {
+                        this.movePiece(1, 0);
+                    } else if (action === 'down') {
+                        this.movePiece(0, 1);
+                    } else if (action === 'rotate-left') {
+                        this.rotatePiece(-1);
+                    } else if (action === 'rotate-right') {
+                        this.rotatePiece(1);
+                    }
+                });
+            });
+        }
     }
 
     start() {
@@ -659,8 +863,10 @@ class SpaceInvadersGame {
     constructor() {
         this.canvas = document.getElementById('invaders-canvas');
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = 800;
-        this.canvas.height = 600;
+        this.baseWidth = 800;
+        this.baseHeight = 600;
+        this.canvas.width = this.baseWidth;
+        this.canvas.height = this.baseHeight;
         
         this.player = {x: this.canvas.width / 2, y: this.canvas.height - 40, width: 40, height: 20};
         this.bullets = [];
@@ -675,6 +881,14 @@ class SpaceInvadersGame {
     }
 
     init() {
+        // Resize canvas for mobile
+        if (isMobile) {
+            resizeCanvas(this.canvas, this.baseWidth, this.baseHeight);
+            window.addEventListener('resize', () => {
+                resizeCanvas(this.canvas, this.baseWidth, this.baseHeight);
+            });
+        }
+
         // Create enemies
         this.enemies = [];
         for (let row = 0; row < 5; row++) {
@@ -688,6 +902,7 @@ class SpaceInvadersGame {
             }
         }
 
+        // Keyboard controls
         document.addEventListener('keydown', (e) => {
             if (!this.gameLoop) return;
             this.keys[e.key] = true;
@@ -700,6 +915,50 @@ class SpaceInvadersGame {
         document.addEventListener('keyup', (e) => {
             this.keys[e.key] = false;
         });
+
+        // Touch controls
+        const controls = document.getElementById('invaders-controls');
+        if (controls) {
+            controls.querySelectorAll('[data-action]').forEach(btn => {
+                const action = btn.dataset.action;
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (action === 'shoot') {
+                        this.shoot();
+                    } else if (action === 'left') {
+                        this.keys['ArrowLeft'] = true;
+                    } else if (action === 'right') {
+                        this.keys['ArrowRight'] = true;
+                    }
+                });
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    if (action === 'left') {
+                        this.keys['ArrowLeft'] = false;
+                    } else if (action === 'right') {
+                        this.keys['ArrowRight'] = false;
+                    }
+                });
+                btn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    if (action === 'shoot') {
+                        this.shoot();
+                    } else if (action === 'left') {
+                        this.keys['ArrowLeft'] = true;
+                    } else if (action === 'right') {
+                        this.keys['ArrowRight'] = true;
+                    }
+                });
+                btn.addEventListener('mouseup', (e) => {
+                    e.preventDefault();
+                    if (action === 'left') {
+                        this.keys['ArrowLeft'] = false;
+                    } else if (action === 'right') {
+                        this.keys['ArrowRight'] = false;
+                    }
+                });
+            });
+        }
     }
 
     start() {
