@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RETRO ARCADE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="crt-screen">
+        <div class="scanlines"></div>
+        <div class="arcade-cabinet">
+            <div class="cabinet-top">
+                <h1 class="title">RETRO ARCADE</h1>
+                <div class="subtitle">SELECT YOUR GAME</div>
+            </div>
+            
+            <!-- Game Selection Menu -->
+            <div id="game-menu" class="game-menu active">
+                <div class="menu-buttons">
+                    <button class="arcade-btn" data-game="snake">
+                        <span class="btn-text">SNAKE</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                    <button class="arcade-btn" data-game="pong">
+                        <span class="btn-text">PONG</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                    <button class="arcade-btn" data-game="tetris">
+                        <span class="btn-text">TETRIS</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                    <button class="arcade-btn" data-game="invaders">
+                        <span class="btn-text">SPACE INVADERS</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Containers -->
+            <div id="game-container" class="game-container">
+                <!-- Snake Game -->
+                <div id="snake-game" class="game-screen">
+                    <canvas id="snake-canvas"></canvas>
+                    <div class="game-info">
+                        <div class="score">SCORE: <span id="snake-score">0</span></div>
+                        <div class="controls">ARROWS: MOVE | ESC: MENU</div>
+                    </div>
+                </div>
+
+                <!-- Pong Game -->
+                <div id="pong-game" class="game-screen">
+                    <canvas id="pong-canvas"></canvas>
+                    <div class="game-info">
+                        <div class="score">SCORE: <span id="pong-score">0</span> - <span id="pong-ai-score">0</span></div>
+                        <div class="controls">W/S: MOVE | ESC: MENU</div>
+                    </div>
+                </div>
+
+                <!-- Tetris Game -->
+                <div id="tetris-game" class="game-screen">
+                    <canvas id="tetris-canvas"></canvas>
+                    <div class="game-info">
+                        <div class="score">SCORE: <span id="tetris-score">0</span></div>
+                        <div class="score">LEVEL: <span id="tetris-level">1</span></div>
+                        <div class="controls">A/D: ROTATE | ARROWS: MOVE | ESC: MENU</div>
+                    </div>
+                </div>
+
+                <!-- Space Invaders Game -->
+                <div id="invaders-game" class="game-screen">
+                    <canvas id="invaders-canvas"></canvas>
+                    <div class="game-info">
+                        <div class="score">SCORE: <span id="invaders-score">0</span></div>
+                        <div class="score">LIVES: <span id="invaders-lives">3</span></div>
+                        <div class="controls">ARROWS: MOVE | SPACE: SHOOT | ESC: MENU</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- End Screen -->
+            <div id="end-screen" class="end-screen">
+                <div class="end-message">
+                    <div class="neon-text">FUCK YOU</div>
+                    <div class="end-subtitle">THANKS FOR PLAYING</div>
+                    <button class="arcade-btn" id="return-btn">
+                        <span class="btn-text">RETURN TO MENU</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
