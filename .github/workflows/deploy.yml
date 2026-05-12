@@ -1,0 +1,21 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  docker_deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compose deploy
+        run: /opt/deploy/scripts/git-compose-deploy.sh --no-git "${{ github.workspace }}" docker-compose.yml "${{ github.ref_name }}"
